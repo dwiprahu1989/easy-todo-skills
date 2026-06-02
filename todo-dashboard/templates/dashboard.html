@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TODO Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+.header{background:#1e293b;border-bottom:1px solid #334155;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:20px;font-weight:700;color:#f8fafc}
+.header .meta{font-size:12px;color:#94a3b8;display:flex;gap:16px;align-items:center}
+.refresh-btn{background:#334155;border:1px solid #475569;color:#94a3b8;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.refresh-btn:hover{background:#475569;color:#e2e8f0}
+.summary{background:#1e293b;border-bottom:1px solid #334155;padding:16px 24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em}
+.stat .value{font-size:22px;font-weight:700}
+.stat .value.green{color:#34d399}
+.stat .value.yellow{color:#fbbf24}
+.stat .value.red{color:#f87171}
+.stat .value.gray{color:#94a3b8}
+.stat .value.blue{color:#60a5fa}
+.progress-wrap{flex:1;min-width:200px}
+.progress-bar{background:#1e293b;border:1px solid #334155;border-radius:8px;height:24px;overflow:hidden;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,#059669,#34d399);border-radius:8px;transition:width 0.5s ease}
+.progress-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:#f8fafc}
+.board{display:flex;gap:16px;padding:20px 24px;overflow-x:auto;min-height:calc(100vh - 160px)}
+.phase-col{background:#1e293b;border:1px solid #334155;border-radius:12px;min-width:280px;max-width:360px;flex:1;display:flex;flex-direction:column}
+.phase-header{padding:12px 16px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center}
+.phase-header .name{font-size:14px;font-weight:700;color:#f8fafc}
+.phase-header .count{font-size:11px;color:#94a3b8;background:#334155;padding:2px 8px;border-radius:10px}
+.phase-tasks{padding:12px;flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.task-card{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color 0.2s}
+.task-card:hover{border-color:#64748b}
+.task-card.done{border-left:3px solid #34d399;background:#052e16}
+.task-card.progress{border-left:3px solid #fbbf24;background:#1c1917}
+.task-card.failed{border-left:3px solid #f87171;background:#1c1318}
+.task-card.pending{border-left:3px solid #475569}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.task-name{font-size:13px;font-weight:600;color:#e2e8f0;flex:1}
+.task-status{font-size:14px;flex-shrink:0}
+.task-details{display:none;margin-top:8px;padding-top:8px;border-top:1px solid #1e293b}
+.task-details.show{display:block}
+.task-achievement{font-size:11px;color:#94a3b8;margin:4px 0}
+.task-achievement span{color:#fbbf24}
+.task-files{font-size:11px;color:#60a5fa;font-family:'Cascadia Code',monospace;margin:4px 0}
+.empty-col{text-align:center;padding:40px 20px;color:#475569;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 <span id="project-name">Loading...</span></h1>
+  <div class="meta">
+    <span id="generated"></span>
+    <span id="live-status" style="color:#34d399">● LIVE</span>
+    <button class="refresh-btn" onclick="refresh()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="summary" id="summary"></div>
+<div class="board" id="board"></div>
+
+<script>
+const TODO_URL = 'TODO.md';
+const PROGRESS_URL = 'TODO_PROGRESS.md';
+let refreshMs = 5000;
+
+function parseTodo(text) {
+  const phases = [];
+  let currentPhase = null;
+  let currentTask = null;
+  const lines = text.split('\n');
+  let projectName = 'Project';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Project name
+    if (line.match(/^# TODO/i)) {
+      projectName = line.replace(/^#\s*/, '').replace(/—\s*/, '').replace(/TODO\s*/i, '').trim();
+      continue;
+    }
+    // Phase header
+    if (line.match(/^## /)) {
+      currentPhase = { name: line.replace(/^##\s*/, ''), tasks: [] };
+      phases.push(currentPhase);
+      continue;
+    }
+    // Task line
+    const taskMatch = line.match(/^- \[([ xX])\]\s+(.+)/);
+    if (taskMatch && currentPhase) {
+      const checked = taskMatch[1].toLowerCase() === 'x';
+      let desc = taskMatch[2].replace(/\s*→\s*achievement:\s*.*/i, '').trim();
+      currentTask = { name: desc, done: checked, achievement: '', files: '', details: '' };
+      currentPhase.tasks.push(currentTask);
+      continue;
+    }
+    // Achievement, files, details (indented lines under task)
+    if (currentTask && line.match(/^\s+→?\s*(achievement|file|detail)/i)) {
+      const content = line.replace(/^\s+→?\s*/, '');
+      if (content.match(/^achievement:/i)) currentTask.achievement = content.replace(/^achievement:\s*/i, '');
+      else if (content.match(/^file/i)) currentTask.files = content.replace(/^files?:\s*/i, '');
+      else if (content.match(/^detail/i)) currentTask.details = content.replace(/^detail:\s*/i, '');
+    }
+  }
+  return { projectName, phases };
+}
+
+function parseProgress(text) {
+  // Returns map of task description -> status
+  const map = {};
+  if (!text) return map;
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const m = line.match(/^- \[x\]\s*(✅|❌|⏳)\s*(.+)/);
+    if (m) map[m[2].trim()] = m[1];
+  }
+  return map;
+}
+
+function getStatus(task, progressMap) {
+  if (task.done) return 'done';
+  const key = task.name.trim();
+  if (progressMap[key] === '⏳') return 'progress';
+  if (progressMap[key] === '❌') return 'failed';
+  return 'pending';
+}
+
+function statusIcon(s) {
+  return s === 'done' ? '✅' : s === 'progress' ? '⏳' : s === 'failed' ? '❌' : '☐';
+}
+
+function render(data, progressMap) {
+  document.getElementById('project-name').textContent = data.projectName || 'TODO Dashboard';
+  document.getElementById('generated').textContent = 'Updated: ' + new Date().toLocaleTimeString('id-ID', {timeZone:'Asia/Makassar'});
+
+  let total=0, done=0, prog=0, fail=0;
+  data.phases.forEach(p => p.tasks.forEach(t => {
+    total++;
+    const s = getStatus(t, progressMap);
+    if (s==='done')done++; else if(s==='progress')prog++; else if(s==='failed')fail++;
+  }));
+  const pending = total - done - prog - fail;
+  const pct = total ? Math.round(done/total*100) : 0;
+
+  document.getElementById('summary').innerHTML =
+    `<div class="stat"><div class="label">Total</div><div class="value blue">${total}</div></div>` +
+    `<div class="stat"><div class="label">Done</div><div class="value green">${done}</div></div>` +
+    `<div class="stat"><div class="label">In Progress</div><div class="value yellow">${prog}</div></div>` +
+    `<div class="stat"><div class="label">Failed</div><div class="value red">${fail}</div></div>` +
+    `<div class="stat"><div class="label">Pending</div><div class="value gray">${pending}</div></div>` +
+    `<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div><div class="progress-text">${pct}% Complete</div></div></div>`;
+
+  const board = document.getElementById('board');
+  board.innerHTML = data.phases.map(phase => {
+    const pDone = phase.tasks.filter(t => getStatus(t, progressMap)==='done').length;
+    const pTotal = phase.tasks.length;
+    return `<div class="phase-col">
+      <div class="phase-header"><span class="name">${phase.name}</span><span class="count">${pDone}/${pTotal} ✅</span></div>
+      <div class="phase-tasks">${phase.tasks.length ? phase.tasks.map(t => {
+        const s = getStatus(t, progressMap);
+        const detId = 'det-' + Math.random().toString(36).substr(2,8);
+        let extra = '';
+        if (t.achievement) extra += `<div class="task-achievement"><span>→</span> ${t.achievement}</div>`;
+        if (t.files) extra += `<div class="task-files">📄 ${t.files}</div>`;
+        if (t.details) extra += `<div class="task-achievement">${t.details}</div>`;
+        return `<div class="task-card ${s}" onclick="toggle('${detId}')">
+          <div class="task-top"><span class="task-name">${t.name}</span><span class="task-status">${statusIcon(s)}</span></div>
+          <div class="task-details" id="${detId}">${extra}</div>
+        </div>`;
+      }).join('') : '<div class="empty-col">No tasks</div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggle(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+async function refresh() {
+  try {
+    const r = await fetch(TODO_URL + '?_t=' + Date.now());
+    const text = await r.text();
+    let progressText = '';
+    try {
+      const pr = await fetch(PROGRESS_URL + '?_t=' + Date.now());
+      if (pr.ok) progressText = await pr.text();
+    } catch(e){}
+    const data = parseTodo(text);
+    const pMap = parseProgress(progressText);
+    render(data, pMap);
+  } catch(e) {
+    document.getElementById('board').innerHTML = '<div class="empty-col">Could not read TODO.md<br><small>' + e.message + '</small></div>';
+  }
+}
+
+refresh();
+setInterval(refresh, refreshMs);
+</script>
+</body>
+</html>

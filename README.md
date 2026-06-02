@@ -170,8 +170,12 @@ easy-todo-skills/
 │   └── SKILL.md
 ├── todo-generator/               ← Standalone generator skill
 │   └── SKILL.md
-└── todo-executor/                ← Standalone executor skill
-    └── SKILL.md
+├── todo-executor/                ← Standalone executor skill
+│   └── SKILL.md
+└── todo-dashboard/               ← Visual Kanban dashboard
+    ├── SKILL.md
+    └── templates/
+        └── dashboard.html
 ```
 
 Each `SKILL.md` is a self-contained skill definition that tells the AI agent:
