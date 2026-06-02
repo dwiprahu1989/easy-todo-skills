@@ -166,10 +166,12 @@ Each task has:
 easy-todo-skills/
 ├── README.md                    ← You are here
 ├── LICENSE
-├── todo-generator/
-│   └── SKILL.md                 ← Generator skill definition
-└── todo-executor/
-    └── SKILL.md                 ← Executor skill definition
+├── easy-todo-skills/             ← Combined skill (ClawHub)
+│   └── SKILL.md
+├── todo-generator/               ← Standalone generator skill
+│   └── SKILL.md
+└── todo-executor/                ← Standalone executor skill
+    └── SKILL.md
 ```
 
 Each `SKILL.md` is a self-contained skill definition that tells the AI agent:
