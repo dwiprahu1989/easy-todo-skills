@@ -1,16 +1,16 @@
 ---
 name: easy-todo-skills
-description: Autonomous TODO planning & execution for AI agents. Generate structured task plans from PRDs, then execute them end-to-end with zero confirmations. Self-verifying, self-correcting.
-version: 1.0.0
+description: Autonomous TODO planning, execution & visual dashboard for AI agents. Generate structured task plans from PRDs, execute them end-to-end with zero confirmations, and monitor progress via live Kanban board.
+version: 1.1.0
 metadata:
   openclaw:
     emoji: "✅"
     homepage: https://github.com/dwiprahu1989/easy-todo-skills
 ---
 
-# Easy TODO Skills — Autonomous Task Planning & Execution
+# Easy TODO Skills — Autonomous Task Planning, Execution & Dashboard
 
-Two-in-one skill: **generate** a structured `TODO.md` from any input, then **execute** it autonomously.
+Three-in-one skill: **generate** a structured `TODO.md` from any input, **execute** it autonomously, and **monitor** progress via live Kanban board.
 
 No hand-holding. No confirmations. Just results.
 
@@ -274,3 +274,71 @@ Update `TODO_PROGRESS.md` in the project during execution:
 - ✅ Run tests at the end
 - ✅ Git commit + push
 - ✅ Report ONCE when fully done
+
+---
+
+## Part 3: TODO Dashboard
+
+### Trigger
+- "buka dashboard TODO", "tampilkan TODO board", "show todo dashboard"
+- "lihat progress project", "task board", "kanban board"
+- After running todo-generator or todo-executor
+- User wants visual overview of project tasks
+
+### How It Works
+
+#### Step 1: Locate TODO Files
+```
+1. Identify active project directory
+2. Read TODO.md (required — the main task list)
+3. Read TODO_PROGRESS.md (optional — execution status)
+4. Read any supporting context (git status, recent changes)
+```
+
+#### Step 2: Parse TODO.md
+Extract structure:
+- Project name (from H1 heading)
+- Phases (from H2 headings)
+- Tasks (from `- [ ]` / `- [x]` checkboxes)
+- Achievements (from `→ achievement:` lines)
+- File targets (from `→ file:` / `→ files:` lines)
+- Details (from `→ detail:` / indented lines)
+
+#### Step 3: Generate Dashboard HTML
+Create a self-contained HTML file at `<project>/dashboard.html` with:
+- **Phase columns** — each phase is a Kanban column
+- **Task cards** — show name, status, achievement, target files
+- **Progress bar** — overall completion percentage
+- **Status badges:** ✅ Done (green), ⏳ In Progress (yellow), ❌ Failed (red), ☐ Pending (gray)
+- **Click to expand** — shows achievement, files, details
+- **Auto-refresh** — re-reads TODO.md every 5 seconds during execution
+- **Dark theme** — consistent with modern dev tooling
+- **Responsive** — works on desktop and mobile
+
+#### Step 4: Present Dashboard
+Serve via Canvas or open in browser.
+
+### Dashboard Features
+| Feature | Description |
+|---------|-------------|
+| Kanban columns | One column per phase, auto-fit layout |
+| Task cards | Name + status + expandable details |
+| Progress bar | Overall completion % with visual bar |
+| Live refresh | Auto re-read TODO.md every 5s during execution |
+| Dark theme | #0f172a background, status-colored cards |
+| Single file | Self-contained HTML, no external deps |
+
+### Refresh Behavior
+| Mode | Trigger | Behavior |
+|------|---------|----------|
+| **Static** | User opens file | Read TODO.md once, render |
+| **Live** | During todo-executor | Auto-refresh every 5 seconds |
+| **Manual** | User clicks refresh | Re-read and re-render |
+
+### Style Colors
+| Status | Background | Border | Text |
+|--------|-----------|--------|------|
+| ✅ Done | #064e3b | #34d399 | #6ee7b7 |
+| ⏳ In Progress | #713f12 | #fbbf24 | #fde68a |
+| ❌ Failed | #7f1d1d | #f87171 | #fca5a5 |
+| ☐ Pending | #1f2937 | #374151 | #9ca3af |

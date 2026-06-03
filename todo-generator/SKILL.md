@@ -1,3 +1,13 @@
+---
+name: todo-generator
+description: Generate structured TODO.md with verifiable achievements from PRDs, feature requests, or instructions. Context-aware task planning for AI agents.
+version: 1.0.0
+metadata:
+  openclaw:
+    emoji: "📋"
+    homepage: https://github.com/dwiprahu1989/easy-todo-skills
+---
+
 # TODO Generator — Auto-create TODO.md from PRD, Feature Requests, or Instructions
 
 Automatically generates a structured `TODO.md` with achievements/expected outcomes

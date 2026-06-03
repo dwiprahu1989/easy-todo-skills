@@ -1,8 +1,8 @@
-# ✅ Easy TODO Skills — Autonomous Task Planning & Execution for AI Agents
+# ✅ Easy TODO Skills — Autonomous Task Planning, Execution & Dashboard for AI Agents
 
-> **Two complementary skills that turn any AI agent into an autonomous coding machine.**
+> **Three complementary skills that turn any AI agent into an autonomous coding machine.**
 
-`todo-generator` creates a structured, verifiable task plan. `todo-executor` runs it end-to-end — no hand-holding, no confirmations, just results.
+`todo-generator` creates a structured, verifiable task plan. `todo-executor` runs it end-to-end with zero confirmations. `todo-dashboard` provides a live visual Kanban board to track progress in real-time.
 
 ---
 
@@ -12,23 +12,24 @@ Most AI coding assistants stop and ask for permission after every step. That's f
 
 1. **todo-generator** — Turns a PRD, feature request, or idea into a detailed `TODO.md` with verifiable achievements
 2. **todo-executor** — Reads that `TODO.md` and executes every task autonomously, self-verifying and self-correcting along the way
+3. **todo-dashboard** — Renders a live-updating HTML Kanban board from `TODO.md`, showing progress as tasks complete
 
 ```
-PRD/Feature Request
+PRD / Feature Request / Idea
         │
         ▼
-┌──────────────────┐     ┌──────────────────┐
-│  TODO Generator  │────▶│  TODO Executor   │
-│                  │     │                  │
-│ • Analyze code   │     │ • Execute tasks  │
-│ • Break down     │     │ • Verify results │
-│ • Plan phases    │     │ • Fix errors     │
-│ • Define goals   │     │ • Run tests      │
-│                  │     │ • Git commit     │
-└──────────────────┘     └──────────────────┘
-        │                        │
-        ▼                        ▼
-     TODO.md              Final Report ✅
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  TODO Generator  │────▶│  TODO Executor   │────▶│  TODO Dashboard  │
+│                  │     │                  │     │                  │
+│ • Analyze code   │     │ • Execute tasks  │     │ • Visual board   │
+│ • Break down     │     │ • Verify results │     │ • Live refresh   │
+│ • Plan phases    │     │ • Fix errors     │     │ • Phase columns  │
+│ • Define goals   │     │ • Run tests      │     │ • Progress bar   │
+│                  │     │ • Git commit     │     │ • Dark theme     │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
+        │                        │                        │
+        ▼                        ▼                        ▼
+     TODO.md              Final Report ✅          Kanban Board 📊
 ```
 
 ---
@@ -44,6 +45,7 @@ Generates a structured `TODO.md` from any input (PRD, feature description, bug r
 - 🎯 **Achievement-oriented** — every task has a verifiable expected outcome (file exists, tests pass, API returns expected JSON)
 - 📁 **File-aware** — specifies target files for each task when possible
 - 🔄 **Dependency-ordered** — tasks are sequenced so each builds on the previous
+- 🛠️ **Adaptive phases** — adjusts phase structure based on project type (Laravel, Frontend, API, Bug Fix)
 
 ### `todo-executor/`
 Reads `TODO.md` and executes all tasks autonomously. Zero confirmations. Zero pauses.
@@ -56,23 +58,40 @@ Reads `TODO.md` and executes all tasks autonomously. Zero confirmations. Zero pa
 - 📊 **Progress tracking** — maintains `TODO_PROGRESS.md` with real-time status
 - 📝 **Git integration** — commits logical groups of changes, pushes when done
 
+### `todo-dashboard/`
+Renders an interactive HTML Kanban board from project `TODO.md` and `TODO_PROGRESS.md` files.
+
+**Key features:**
+- 📊 **Visual Kanban board** — each phase becomes a column with task cards
+- 🔴 **Live auto-refresh** — re-reads `TODO.md` every 5 seconds during execution for real-time updates
+- 🌙 **Dark theme** — consistent with modern dev tooling aesthetics
+- 📱 **Responsive** — works on desktop and mobile
+- 🎨 **Status badges** — ✅ Done (green), ⏳ In Progress (yellow), ❌ Failed (red), ☐ Pending (gray)
+- 📈 **Progress bar** — overall completion percentage with visual indicator
+- 🔍 **Expandable cards** — click to show achievement details, target files, implementation notes
+- 📦 **Single file** — self-contained HTML with embedded CSS + JS, no external dependencies
+
 ---
 
 ## 🚀 Quick Start
 
 ### Installation
 
-Copy both skill folders into your agent's skills directory:
+Copy skill folders into your agent's skills directory:
 
 ```bash
 # For EasyClaw
 cp -r todo-generator ~/.easyclaw/workspace/skills/
 cp -r todo-executor ~/.easyclaw/workspace/skills/
+cp -r todo-dashboard ~/.easyclaw/workspace/skills/
 
 # For OpenClaw
 cp -r todo-generator ~/.openclaw/workspace/skills/
 cp -r todo-executor ~/.openclaw/workspace/skills/
+cp -r todo-dashboard ~/.openclaw/workspace/skills/
 ```
+
+Or install the combined skill from ClawHub for a single-folder install.
 
 ### Usage
 
@@ -80,7 +99,7 @@ cp -r todo-executor ~/.openclaw/workspace/skills/
 ```
 You: "Read this PRD and create a TODO for the order management feature"
 
-Agent: 
+Agent (todo-generator): 
   → Analyzes project structure
   → Reads existing code patterns
   → Generates TODO.md with phases, tasks, and achievements
@@ -91,7 +110,7 @@ Agent:
 ```
 You: "Yes, execute all"
 
-Agent:
+Agent (todo-executor):
   → Reads TODO.md
   → Executes task 1 → verifies ✅
   → Executes task 2 → verifies ✅
@@ -102,20 +121,32 @@ Agent:
   → Final report
 ```
 
+**Step 3: Monitor (Optional)**
+```
+You: "Show me the TODO dashboard"
+
+Agent (todo-dashboard):
+  → Reads TODO.md + TODO_PROGRESS.md
+  → Generates interactive Kanban board
+  → Auto-refreshes every 5s during execution
+  → Shows phase progress + overall completion
+```
+
 ---
 
 ## 📄 TODO.md Format
 
-The skills use a structured markdown format:
+The skills use a structured markdown format with **mandatory achievements**:
 
 ```markdown
 # TODO — Feature Name
-> Generated: 2026-06-02 | Project: /path/to/project
+> Generated: 2026-06-03 | Project: /path/to/project
+> Source: PRD / feature request / instruction
 
 ## Phase 1: Setup
 - [ ] Create migration for orders table
   → achievement: php artisan migrate runs without error
-  → file: database/migrations/2026_06_02_create_orders_table.php
+  → file: database/migrations/2026_06_03_create_orders_table.php
   → columns: id, user_id, total, status, timestamps
 
 ## Phase 2: Core
@@ -135,6 +166,17 @@ Each task has:
 - **Files** — target file paths (optional)
 - **Details** — implementation specifics (optional)
 
+### Achievement Rules
+
+Achievements must be **objectively verifiable without human judgment**:
+
+| ✅ Good Achievement | ❌ Bad Achievement |
+|---|---|
+| `file app/Models/User.php exists with fillable fields` | `looks good` |
+| `POST /api/login returns {token, user} with 200` | `works correctly` |
+| `8 tests pass — create, read, update, delete, validation` | `code is clean` |
+| `php artisan migrate runs without error` | `database is ready` |
+
 ---
 
 ## ⚙️ Configuration
@@ -143,20 +185,30 @@ Each task has:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Phase structure | Adaptive | Adjusts phases based on tech stack (Laravel, Frontend, API, etc.) |
+| Phase structure | Adaptive | Adjusts phases based on tech stack |
 | Task granularity | 1-10 min/task | Each task is a small, focused unit |
 | Output location | Project root | `TODO.md` goes in the active project folder |
+| Achievement format | Mandatory | Every task must have a verifiable outcome |
 
 ### todo-executor
 
 | Rule | Behavior |
 |------|----------|
-| Confirmations | ❌ None |
-| Pauses | ❌ None |
-| Retry limit | ♾️ Unlimited |
+| Confirmations | ❌ None — never ask between tasks |
+| Pauses | ❌ None — never wait for user reply |
+| Retry limit | ♾️ Unlimited — loop until correct |
 | Error handling | Auto-fix, retry until correct |
 | Progress tracking | `TODO_PROGRESS.md` updated in real-time |
 | Git | Commit per logical group, push at end |
+
+### todo-dashboard
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Theme | Dark | Dark background (#0f172a) |
+| Refresh mode | Auto | Re-reads TODO.md every 5s during execution |
+| Layout | Kanban grid | One column per phase, responsive |
+| Output | Single HTML | Self-contained, no external deps |
 
 ---
 
@@ -164,18 +216,18 @@ Each task has:
 
 ```
 easy-todo-skills/
-├── README.md                    ← You are here
-├── LICENSE
-├── easy-todo-skills/             ← Combined skill (ClawHub)
+├── README.md                     ← You are here
+├── LICENSE                       ← MIT
+├── easy-todo-skills/              ← Combined skill (ClawHub single-install)
 │   └── SKILL.md
-├── todo-generator/               ← Standalone generator skill
+├── todo-generator/                ← Standalone generator skill
 │   └── SKILL.md
-├── todo-executor/                ← Standalone executor skill
+├── todo-executor/                 ← Standalone executor skill
 │   └── SKILL.md
-└── todo-dashboard/               ← Visual Kanban dashboard
+└── todo-dashboard/                ← Visual Kanban dashboard
     ├── SKILL.md
     └── templates/
-        └── dashboard.html
+        └── dashboard.html         ← Reusable HTML template
 ```
 
 Each `SKILL.md` is a self-contained skill definition that tells the AI agent:
@@ -200,9 +252,9 @@ Tested with:
 
 ---
 
-## 📊 Example Output
+## 📊 Example Flow
 
-### Generator creates:
+### 1. Generator creates:
 ```
 TODO.md — 15 tasks in 4 phases
 Phase 1: Database & Models (5 tasks)
@@ -211,7 +263,23 @@ Phase 3: Frontend (3 tasks)
 Phase 4: Testing & Polish (3 tasks)
 ```
 
-### Executor produces:
+### 2. Dashboard renders:
+```
+┌──────────┬──────────┬──────────┬──────────┐
+│ Phase 1  │ Phase 2  │ Phase 3  │ Phase 4  │
+│ Setup    │ Core     │ Integrate│ Testing  │
+│          │          │          │          │
+│ ✅ Task1 │ ✅ Task5 │ ☐ Task10│ ☐ Task13 │
+│ ✅ Task2 │ ✅ Task6 │ ☐ Task11│ ☐ Task14 │
+│ ✅ Task3 │ ⏳ Task7 │ ☐ Task12│ ☐ Task15 │
+│ ✅ Task4 │ ⏳ Task8 │         │          │
+│          │ ☐ Task9  │         │          │
+│ 4/4 ✅   │ 2/5 🔄   │ 0/3 ☐   │ 0/3 ☐   │
+└──────────┴──────────┴──────────┴──────────┘
+  ████████████████░░░░░░░░░░░░ 53% Complete
+```
+
+### 3. Executor produces:
 ```markdown
 ## ✅ TODO Execution Complete — Order Management
 
@@ -230,6 +298,19 @@ Phase 4: Testing & Polish (3 tasks)
 - Commits: 3
 - Files changed: 7
 ```
+
+---
+
+## 🔄 Integration with Other Skills
+
+These skills pair well with:
+
+| Skill | Integration |
+|-------|-------------|
+| **plan-review** | If 3+ files will change, show plan first before executing |
+| **diagnose** | Use for systematic bug fixing during test phase |
+| **tdd** | Combine with test-driven development workflow |
+| **codegraph** | Re-initialize code graph after batch edits (3+ files) |
 
 ---
 

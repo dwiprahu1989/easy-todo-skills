@@ -1,3 +1,13 @@
+---
+name: todo-executor
+description: Autonomous TODO.md task runner for AI agents. Executes all tasks with zero confirmations, self-verifies, self-corrects, and runs bug tests.
+version: 1.0.0
+metadata:
+  openclaw:
+    emoji: "🤖"
+    homepage: https://github.com/dwiprahu1989/easy-todo-skills
+---
+
 # TODO Executor — Autonomous Coding Task Runner
 
 Reads `TODO.md` from the active project and executes all tasks autonomously.
